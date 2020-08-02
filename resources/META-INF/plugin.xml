@@ -1,8 +1,8 @@
 <idea-plugin>
-  <id>com.your.company.unique.plugin.id</id>
-  <name>Plugin display name here</name>
+  <id>dev.aid.delombok</id>
+  <name>Delombok</name>
   <version>1.0</version>
-  <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+  <vendor email="04637@163.com" url="https://github.com/04637">阳光彩虹小白马Plus</vendor>
 
   <description><![CDATA[
       Enter short description for your plugin here.<br>
@@ -16,7 +16,7 @@
   </change-notes>
 
   <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="173.0"/>
+  <idea-version since-build="193.0"/>
 
   <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
@@ -24,20 +24,20 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
+    <postStartupActivity implementation="dev.aid.delombok.MyStartupActivity" />
   </extensions>
 
   <actions>
     <!-- Add your actions here -->
-    <action id="dev.aid.delombok.FoldAction" class="dev.aid.delombok.FoldAction"
-        text="Deploy project" description="Deploy project" icon="/icons/icon.svg">
+    <action id="dev.aid.delombok.Delombok" class="dev.aid.delombok.DelombokAction"
+        text="Delombok project" description="Deploy project" icon="/icons/icon.svg">
       <add-to-group group-id="NavBarToolBar" anchor="before"
           relative-to-action="ToolbarRunGroup" />
     </action>
-    <action id="dev.aid.delombok.FoldAction2" class="dev.aid.delombok.FoldAction"
-        text="Deploy project" description="Deploy project" icon="/icons/icon.svg">
+    <action id="dev.aid.delombok.Delombok2" class="dev.aid.delombok.DelombokAction"
+        text="Delombok project" description="Deploy project" icon="/icons/icon.svg">
       <add-to-group group-id="MainToolBar" anchor="before"
           relative-to-action="ToolbarRunGroup" />
     </action>
   </actions>
-
 </idea-plugin>

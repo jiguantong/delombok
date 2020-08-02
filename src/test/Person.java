@@ -13,7 +13,7 @@ public class Person {
     String name;
     String age;
 
-    //<editor-fold desc="Description">
+    //<editor-fold desc="delombok: hanihani">
     @SuppressWarnings("all")
     public Person() {
     }
