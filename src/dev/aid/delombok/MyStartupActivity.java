@@ -13,15 +13,19 @@ import com.intellij.util.messages.MessageBus;
 
 import org.jetbrains.annotations.NotNull;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
- * 项目打开时动作
+ * 项目打开时动作2
  *
  * @author: 04637@163.com
  * @date: 2020/8/2
  */
+@Slf4j
 public class MyStartupActivity implements StartupActivity {
     @Override
     public void runActivity(@NotNull Project project) {
+        log.info("hello");
         MessageBus messageBus = project.getMessageBus();
         messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
             @Override
