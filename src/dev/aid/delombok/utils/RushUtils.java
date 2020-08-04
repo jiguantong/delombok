@@ -31,8 +31,8 @@ public class RushUtils {
     }
 
     public static void main(String[] args) {
-        String srcDir = "src\\test";
-        String baseDir = "E:\\projects\\qqq\\delombok";
+        String srcDir = "src/test";
+        String baseDir = "E:/projects/delombok";
         rush(baseDir, srcDir);
     }
 
@@ -54,9 +54,8 @@ public class RushUtils {
         String tmpDir = baseDir + "/delombok";
         try {
             // 1. 备份源文件目录
-            long timestamp = System.currentTimeMillis();
             FileUtils.copyDirectoryToDirectory(new File(srcDir),
-                    new File(tmpDir + "/bak-" + timestamp));
+                    new File(tmpDir + "/src-bak"));
             // 2. 反编译lombok注解
             String targetDir = tmpDir + "/target";
             String cmd = "cmd /c " +
@@ -68,7 +67,8 @@ public class RushUtils {
                 throw new RuntimeException("Delombok failed!");
             }
             // 3. 遍历源码文件
-            traverseDir(new File(srcDir));
+            traverseDir(new File(srcDir), srcDir.replaceAll("/", "\\\\"),
+                    targetDir.replaceAll("/", "\\\\"));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -125,16 +125,27 @@ public class RushUtils {
         }
     }
 
-    private final static void traverseDir(File dir) {
+    /**
+     * 遍历目录并
+     *
+     * @param dir       待遍历目录
+     * @param srcDir    源码目录, 该目录文件将被生成的文件替换
+     * @param targetDir delombok 生成目录
+     */
+    private final static void traverseDir(File dir, String srcDir, String targetDir) {
         if (!dir.exists() || !dir.isDirectory()) {
             return;
         }
         File[] files = dir.listFiles();
         for (File f : files) {
             if (f.isDirectory()) {
-                traverseDir(f);
-            } else if (f.isFile()) {
-                System.out.println(f.getPath());
+                traverseDir(f, srcDir, targetDir);
+            } else if (f.isFile() && f.getName().endsWith(".java")) {
+                String targetPath = f.getAbsolutePath().replace(srcDir, targetDir);
+                if (new File(targetPath).exists()) {
+                    // 如果delombok文件存在, 则进行整合覆写
+                    patchFile(f.getAbsolutePath(), targetPath);
+                }
             }
         }
     }
