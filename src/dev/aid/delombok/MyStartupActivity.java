@@ -23,9 +23,15 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class MyStartupActivity implements StartupActivity {
+    /**
+     * test doc Comment
+     *
+     * @param project
+     */
     @Override
     public void runActivity(@NotNull Project project) {
         log.info("hello");
+        // 消息总线
         MessageBus messageBus = project.getMessageBus();
         messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
             @Override
