@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>dev.aid.delombok</id>
   <name>Delombok</name>
-  <version>1.0</version>
+  <version>1.18.2</version>
   <vendor email="04637@163.com" url="https://github.com/04637">阳光彩虹小白马Plus</vendor>
 
   <description><![CDATA[
@@ -24,20 +24,27 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
-    <postStartupActivity implementation="dev.aid.delombok.MyStartupActivity" />
+    <postStartupActivity implementation="dev.aid.delombok.activity.MyStartupActivity" />
   </extensions>
 
   <actions>
     <!-- Add your actions here -->
     <action id="dev.aid.delombok.Delombok" class="dev.aid.delombok.DelombokAction"
-        text="Delombok project" description="Deploy project" icon="/icons/icon.svg">
-      <add-to-group group-id="NavBarToolBar" anchor="before"
-          relative-to-action="ToolbarRunGroup" />
+        text="Delombok project" description="Deploy project" icon="/icons/icon16.svg">
+      <add-to-group group-id="NavBarToolBar" anchor="before" relative-to-action="ToolbarRunGroup" />
+    </action>
+    <action id="dev.aid.delombok.Delombok3" class="dev.aid.delombok.DelombokAction"
+        text="Delombok project" description="Deploy project" icon="/icons/icon16.svg">
+      <add-to-group group-id="MainToolBar" anchor="before" relative-to-action="ToolbarRunGroup" />
     </action>
     <action id="dev.aid.delombok.Delombok2" class="dev.aid.delombok.DelombokAction"
-        text="Delombok project" description="Deploy project" icon="/icons/icon.svg">
-      <add-to-group group-id="MainToolBar" anchor="before"
-          relative-to-action="ToolbarRunGroup" />
+        text="Delombok project" description="Deploy project" icon="/icons/icon16.svg">
+      <add-to-group group-id="Java.BuildMenu" anchor="after" relative-to-action="CompileDirty" />
     </action>
   </actions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <toolWindow id="Delombok" icon="/icons/icon13.svg" anchor="bottom"
+        factoryClass="dev.aid.delombok.window.MyToolWindowFactory" />
+  </extensions>
 </idea-plugin>

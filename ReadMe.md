@@ -1,1 +1,1 @@
-java -cp "lombok.jar;tools.jar" lombok.launch.Main delombok src -d src-delomboked -e UTF-8 -f indent:4 -f generateDelombokComment:skip -f javaLangAsFQN:skip
+java -cp "lombok.jar;tools.jar" lombok.launch.Main delombok src -d src-delomboked -e UTF-8 -f indent:4 -f generateDelombokComment:skip -f javaLangAsFQN:skip -f suppressWarnings:skip --onlyChanged

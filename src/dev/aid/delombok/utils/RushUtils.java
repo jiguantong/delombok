@@ -5,17 +5,25 @@ import com.github.difflib.patch.AbstractDelta;
 import com.github.difflib.patch.DeltaType;
 import com.github.difflib.patch.Patch;
 import com.github.difflib.patch.PatchFailedException;
+import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.ui.ConsoleViewContentType;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import dev.aid.delombok.activity.MyStartupActivity;
 
 /**
  * 就靠你了
@@ -30,21 +38,27 @@ public class RushUtils {
     private RushUtils() {
     }
 
-    public static void main(String[] args) {
-        String srcDir = "src/test";
-        String baseDir = "E:/projects/delombok";
-        rush(baseDir, srcDir);
-    }
-
     /**
      * 1. 备份 srcDir 至 tmpDir/timestamp 中
      * 2. 在 baseDir 中执行 delombok, 生成至 tmpDir/target 中
      * 3. 将 targetDir 中的代码处理后, 覆盖 srcDir
      *
-     * @param baseDir rush的根目录, 所有命令将在此目录中执行
-     * @param srcDir  需要 delombok 的源码目录, 注意该目录传值为 baseDir 的相对路径
+     * @param baseDir     rush的根目录, 所有命令将在此目录中执行
+     * @param srcDir      需要 delombok 的源码目录, 注意该目录传值为 baseDir 的相对路径
+     * @param consoleView 输出控制台
      */
-    public static final void rush(String baseDir, String srcDir) {
+    public static final void rush(String baseDir, String srcDir, ConsoleView consoleView) {
+        URI uri = ZipUtils.getJarURI();
+        String lombokPath = "lombok.jar";
+        String toolsPath = "tools.jar";
+        if (uri != null) {
+            URI lombokUri = ZipUtils.getFile(uri, "lombok.jar");
+            URI toolsUri = ZipUtils.getFile(uri, "tools.jar");
+            if (lombokUri != null && toolsUri != null) {
+                lombokPath = lombokUri.getPath();
+                toolsPath = toolsUri.getPath();
+            }
+        }
         // 如果是相对路径, 拼接绝对路径
         if (StringUtils.isEmpty(srcDir)) {
             throw new IllegalArgumentException("未指定src目录");
@@ -54,21 +68,44 @@ public class RushUtils {
         String tmpDir = baseDir + "/delombok";
         try {
             // 1. 备份源文件目录
+            consoleView.print("### => Backup src to delombok/src-bak\n",
+                    ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
             FileUtils.copyDirectoryToDirectory(new File(srcDir),
                     new File(tmpDir + "/src-bak"));
             // 2. 反编译lombok注解
+            consoleView.print("### => Delombok...\n",
+                    ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
             String targetDir = tmpDir + "/target";
             String cmd = "cmd /c " +
-                    "java -cp \"lombok.jar;tools.jar\" lombok.launch.Main delombok " + srcDir
-                    + " -d " + targetDir + " -e UTF-8 -f indent:4 -f generateDelombokComment:skip -f javaLangAsFQN:skip";
+                    "java -cp \"" + lombokPath + ";" + toolsPath + "\" lombok.launch.Main delombok "
+                    + srcDir
+                    + " -d " + targetDir + " -e UTF-8 --onlyChanged " +
+                    "-f indent:4 " +
+                    "-f generateDelombokComment:skip " +
+                    "-f javaLangAsFQN:skip " +
+                    "-f suppressWarnings:skip";
             Process process = Runtime.getRuntime().exec(cmd, null, new File(baseDir));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream(),
+                    StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new RuntimeException("Delombok failed!");
+                consoleView.print("### => Delombok failed!\n", ConsoleViewContentType.LOG_ERROR_OUTPUT);
+                consoleView.print(sb.toString(), ConsoleViewContentType.LOG_WARNING_OUTPUT);
+                return;
             }
-            // 3. 遍历源码文件
+            consoleView.print("### => Delombok successful!\n", ConsoleViewContentType.LOG_INFO_OUTPUT);
+            // 3. 遍历源码文件并覆写delombok结果(含隐藏注释)
+            consoleView.print("### => Overwriting src...\n", ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
             traverseDir(new File(srcDir), srcDir.replaceAll("/", "\\\\"),
                     targetDir.replaceAll("/", "\\\\"));
+            consoleView.print("### => Done!\n", ConsoleViewContentType.LOG_INFO_OUTPUT);
+            // 4. 提醒折叠
+            MyStartupActivity.setNeedFold(true);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
