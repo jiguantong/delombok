@@ -17,6 +17,9 @@ public class FoldUtils {
     public static void fold(Project project) {
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         CodeFoldingManager foldingManager = CodeFoldingManager.getInstance(project);
+        if (editor == null) {
+            return;
+        }
         foldingManager.updateFoldRegions(editor);
         final FoldRegion[] foldRegions = editor.getFoldingModel().getAllFoldRegions();
         Runnable foldProcess = () -> {

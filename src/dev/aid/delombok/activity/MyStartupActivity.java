@@ -41,7 +41,6 @@ public class MyStartupActivity implements StartupActivity {
             @Override
             public void after(@NotNull List<? extends VFileEvent> events) {
                 if (needFold) {
-                    System.out.println("fold");
                     FoldUtils.fold(project);
                     setNeedFold(false);
                 }

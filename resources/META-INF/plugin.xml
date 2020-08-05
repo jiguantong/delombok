@@ -46,5 +46,6 @@
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow id="Delombok" icon="/icons/icon13.svg" anchor="bottom"
         factoryClass="dev.aid.delombok.window.MyToolWindowFactory" />
+    <checkinHandlerFactory implementation="dev.aid.delombok.handler.DlCheckinHandlerFactory" />
   </extensions>
 </idea-plugin>

@@ -20,15 +20,14 @@ import dev.aid.delombok.utils.RushUtils;
  * @date: 2020/8/1
  */
 public class DelombokAction extends AnAction {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DelombokAction.class);
     private static ConsoleView consoleView = null;
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        log.info("hello");
         Project project = e.getProject();
         ToolWindow toolWindow = ToolWindowManager.getInstance(e.getProject()).getToolWindow("Delombok");
-        toolWindow.show();
+        toolWindow.show(() -> {
+        });
         if (consoleView == null) {
             consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(e.getProject()).getConsole();
         } else {

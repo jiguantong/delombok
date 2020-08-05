@@ -56,7 +56,13 @@ public class RushUtils {
             URI toolsUri = ZipUtils.getFile(uri, "tools.jar");
             if (lombokUri != null && toolsUri != null) {
                 lombokPath = lombokUri.getPath();
+                if (lombokPath.charAt(0) == '/') {
+                    lombokPath = lombokPath.replaceFirst("/", "");
+                }
                 toolsPath = toolsUri.getPath();
+                if (toolsPath.charAt(0) == '/') {
+                    toolsPath = toolsPath.replaceFirst("/", "");
+                }
             }
         }
         // 如果是相对路径, 拼接绝对路径
@@ -68,13 +74,17 @@ public class RushUtils {
         String tmpDir = baseDir + "/delombok";
         try {
             // 1. 备份源文件目录
-            consoleView.print("### => Backup src to delombok/src-bak\n",
-                    ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
+            if (consoleView != null) {
+                consoleView.print("### => Backup src to delombok/src-bak\n",
+                        ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
+            }
             FileUtils.copyDirectoryToDirectory(new File(srcDir),
                     new File(tmpDir + "/src-bak"));
             // 2. 反编译lombok注解
-            consoleView.print("### => Delombok...\n",
-                    ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
+            if (consoleView != null) {
+                consoleView.print("### => Delombok...\n",
+                        ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
+            }
             String targetDir = tmpDir + "/target";
             String cmd = "cmd /c " +
                     "java -cp \"" + lombokPath + ";" + toolsPath + "\" lombok.launch.Main delombok "
@@ -94,16 +104,22 @@ public class RushUtils {
             }
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                consoleView.print("### => Delombok failed!\n", ConsoleViewContentType.LOG_ERROR_OUTPUT);
-                consoleView.print(sb.toString(), ConsoleViewContentType.LOG_WARNING_OUTPUT);
+                if (consoleView != null) {
+                    consoleView.print("### => Delombok failed!\n", ConsoleViewContentType.LOG_ERROR_OUTPUT);
+                    consoleView.print(sb.toString(), ConsoleViewContentType.LOG_WARNING_OUTPUT);
+                }
                 return;
             }
-            consoleView.print("### => Delombok successful!\n", ConsoleViewContentType.LOG_INFO_OUTPUT);
-            // 3. 遍历源码文件并覆写delombok结果(含隐藏注释)
-            consoleView.print("### => Overwriting src...\n", ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
+            if (consoleView != null) {
+                consoleView.print("### => Delombok successful!\n", ConsoleViewContentType.LOG_INFO_OUTPUT);
+                // 3. 遍历源码文件并覆写delombok结果(含隐藏注释)
+                consoleView.print("### => Overwriting src...\n", ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
+            }
             traverseDir(new File(srcDir), srcDir.replaceAll("/", "\\\\"),
                     targetDir.replaceAll("/", "\\\\"));
-            consoleView.print("### => Done!\n", ConsoleViewContentType.LOG_INFO_OUTPUT);
+            if (consoleView != null) {
+                consoleView.print("### => Done!\n", ConsoleViewContentType.LOG_INFO_OUTPUT);
+            }
             // 4. 提醒折叠
             MyStartupActivity.setNeedFold(true);
         } catch (IOException | InterruptedException e) {
