@@ -5,13 +5,33 @@
   <vendor email="04637@163.com" url="https://github.com/04637">阳光彩虹小白马Plus</vendor>
 
   <description><![CDATA[
-      Enter short description for your plugin here.<br>
-      <em>most HTML tags may be used</em>
+      <h2>Let you work with people who don't use lombok.</h2>
+      --- English ---
+      <p>Let you continue to use lombok and can cooperate with people who do not use it, keep the code concise and complete, and let you focus more on the core code.</p>
+      <br>
+      <p>Use: </p>
+      <ul>
+          <li>You can check "Delombok code" checkbox in vcs before committing the code.</li>
+          <li>You can click "Delombok project" in "Build" menu.</li>
+      </ul>
+      <br>
+      --- Chinese ---
+      <h3>让你使用lombok与不使用lombok插件的人合作, 保证代码完整性的同时隐藏样板式代码, 让你只关注核心代码</h3><br>
+      <p>使用: </p>
+      <ul>
+          <li>可以在提交代码前, 在vcs中勾选 "Delombok code" 复选框</li>
+          <li>可以在 "Build" 菜单中点击 "Delombok project" 来delombok整个项目</li>
+      </ul>
+      <hr>
+      Github: <a href="https://github.com/04637/delombok">https://github.com/04637/delombok</a></br>
     ]]></description>
 
   <change-notes><![CDATA[
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>
+      <ul>
+          <li>Support delombok the entire project</li>
+          <li>Support delombok the checked files in vcs</li>
+          <li>Automatically hide delombok code</li>
+      </ul>
     ]]>
   </change-notes>
 
