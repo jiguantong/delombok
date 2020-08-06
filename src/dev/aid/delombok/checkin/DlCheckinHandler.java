@@ -56,6 +56,9 @@ public class DlCheckinHandler extends CheckinHandler {
 
     @Override
     public ReturnResult beforeCheckin(@Nullable CommitExecutor executor, PairConsumer<Object, Object> additionalDataConsumer) {
+        if (!this.checkBox.isSelected()) {
+            return ReturnResult.COMMIT;
+        }
         Collection<VirtualFile> affectedFiles = checkinPanel.getVirtualFiles();
         final String[] msg = {""};
         Task.Modal task = new Task.Modal(project, "Delombok code...", false) {
