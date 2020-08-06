@@ -7,7 +7,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 
 /**
- * todo
+ * 隐藏代码
  *
  * @author: 04637@163.com
  * @date: 2020/8/5
@@ -17,9 +17,6 @@ public class FoldUtils {
     public static void fold(Project project) {
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         CodeFoldingManager foldingManager = CodeFoldingManager.getInstance(project);
-        if (editor == null) {
-            return;
-        }
         foldingManager.updateFoldRegions(editor);
         final FoldRegion[] foldRegions = editor.getFoldingModel().getAllFoldRegions();
         Runnable foldProcess = () -> {

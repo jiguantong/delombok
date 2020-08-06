@@ -14,7 +14,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * todo
+ * 压缩文件内部执行文件
  *
  * @author: 04637@163.com
  * @date: 2020/8/5

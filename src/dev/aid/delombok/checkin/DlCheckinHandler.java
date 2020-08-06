@@ -1,6 +1,9 @@
-package dev.aid.delombok.handler;
+package dev.aid.delombok.checkin;
 
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -12,6 +15,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.NonFocusableCheckBox;
 import com.intellij.util.PairConsumer;
 
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.BorderLayout;
@@ -24,7 +29,7 @@ import javax.swing.JPanel;
 import dev.aid.delombok.utils.RushUtils;
 
 /**
- * todo
+ * 提交前动作
  *
  * @author: 04637@163.com
  * @date: 2020/8/5
@@ -52,8 +57,25 @@ public class DlCheckinHandler extends CheckinHandler {
     @Override
     public ReturnResult beforeCheckin(@Nullable CommitExecutor executor, PairConsumer<Object, Object> additionalDataConsumer) {
         Collection<VirtualFile> affectedFiles = checkinPanel.getVirtualFiles();
-        RushUtils.rush(project.getBasePath(), "src", null);
-        return ReturnResult.COMMIT;
+        final String[] msg = {""};
+        Task.Modal task = new Task.Modal(project, "Delombok code...", false) {
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                msg[0] = RushUtils.rush(project.getBasePath(), "src", null, progressIndicator, affectedFiles);
+            }
+        };
+        ProgressManager.getInstance().run(task);
+        if (StringUtils.isEmpty(msg[0])) {
+            return ReturnResult.COMMIT;
+        } else {
+            handleError(msg[0]);
+            return ReturnResult.CANCEL;
+        }
+    }
+
+    @Override
+    public void checkinSuccessful() {
+        super.checkinSuccessful();
     }
 
     private void handleError(String msg) {

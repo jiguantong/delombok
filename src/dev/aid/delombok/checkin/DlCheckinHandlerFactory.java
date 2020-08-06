@@ -1,4 +1,4 @@
-package dev.aid.delombok.handler;
+package dev.aid.delombok.checkin;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.CheckinProjectPanel;
@@ -9,7 +9,7 @@ import com.intellij.openapi.vcs.checkin.CheckinHandlerFactory;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * todo
+ * 提交前动作
  *
  * @author: 04637@163.com
  * @date: 2020/8/5

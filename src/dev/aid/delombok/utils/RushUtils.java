@@ -7,6 +7,8 @@ import com.github.difflib.patch.Patch;
 import com.github.difflib.patch.PatchFailedException;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.vfs.VirtualFile;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -19,11 +21,10 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import dev.aid.delombok.activity.MyStartupActivity;
 
 /**
  * 就靠你了
@@ -46,8 +47,11 @@ public class RushUtils {
      * @param baseDir     rush的根目录, 所有命令将在此目录中执行
      * @param srcDir      需要 delombok 的源码目录, 注意该目录传值为 baseDir 的相对路径
      * @param consoleView 输出控制台
+     * @return errMsg     错误信息
      */
-    public static final void rush(String baseDir, String srcDir, ConsoleView consoleView) {
+    public static final String rush(String baseDir, String srcDir, ConsoleView consoleView
+            , ProgressIndicator indicator, Collection<VirtualFile> specifiedFiles) {
+        indicator.setFraction(0);
         URI uri = ZipUtils.getJarURI();
         String lombokPath = "lombok.jar";
         String toolsPath = "tools.jar";
@@ -72,6 +76,7 @@ public class RushUtils {
             srcDir = baseDir + "/" + srcDir;
         }
         String tmpDir = baseDir + "/delombok";
+        indicator.setFraction(0.2);
         try {
             // 1. 备份源文件目录
             if (consoleView != null) {
@@ -80,12 +85,15 @@ public class RushUtils {
             }
             FileUtils.copyDirectoryToDirectory(new File(srcDir),
                     new File(tmpDir + "/src-bak"));
+            indicator.setFraction(0.4);
             // 2. 反编译lombok注解
             if (consoleView != null) {
                 consoleView.print("### => Delombok...\n",
                         ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
             }
             String targetDir = tmpDir + "/target";
+            File targetDirFile = new File(targetDir);
+            deleteDir(targetDirFile);
             String cmd = "cmd /c " +
                     "java -cp \"" + lombokPath + ";" + toolsPath + "\" lombok.launch.Main delombok "
                     + srcDir
@@ -108,23 +116,34 @@ public class RushUtils {
                     consoleView.print("### => Delombok failed!\n", ConsoleViewContentType.LOG_ERROR_OUTPUT);
                     consoleView.print(sb.toString(), ConsoleViewContentType.LOG_WARNING_OUTPUT);
                 }
-                return;
+                return "Delombok failed!";
             }
+            indicator.setFraction(0.7);
             if (consoleView != null) {
                 consoleView.print("### => Delombok successful!\n", ConsoleViewContentType.LOG_INFO_OUTPUT);
                 // 3. 遍历源码文件并覆写delombok结果(含隐藏注释)
                 consoleView.print("### => Overwriting src...\n", ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
             }
-            traverseDir(new File(srcDir), srcDir.replaceAll("/", "\\\\"),
-                    targetDir.replaceAll("/", "\\\\"));
+            if (specifiedFiles == null) {
+                // 未指定文件, 则覆写所有src
+                traverseDir(new File(srcDir), srcDir.replaceAll("/", "\\\\"),
+                        targetDir.replaceAll("/", "\\\\"));
+            } else {
+                // 遍历指定文件集合
+                traverseFiles(specifiedFiles, srcDir, targetDir);
+            }
+
+            indicator.setFraction(0.95);
             if (consoleView != null) {
                 consoleView.print("### => Done!\n", ConsoleViewContentType.LOG_INFO_OUTPUT);
             }
             // 4. 提醒折叠
-            MyStartupActivity.setNeedFold(true);
+            indicator.setFraction(1);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
+            return "Delombok: Overwriting src failed!";
         }
+        return null;
     }
 
     /**
@@ -162,7 +181,16 @@ public class RushUtils {
                     }
                     // 在首个非空行位置及末尾位置插入自定义折叠注释
                     lines.add(emptyIndex, indent + "//<editor-fold desc=\"delombok\">");
-                    lines.add(indent + "//</editor-fold>");
+                    emptyIndex = lines.size();
+                    for (int i = lines.size() - 1; i >= 0; i--) {
+                        String line = lines.get(i);
+                        if (line.isEmpty()) {
+                            emptyIndex = i;
+                        } else {
+                            break;
+                        }
+                    }
+                    lines.add(emptyIndex, indent + "//</editor-fold>");
                 }
             }
             List<String> result = patch.applyTo(originalLines);
@@ -179,7 +207,7 @@ public class RushUtils {
     }
 
     /**
-     * 遍历目录并
+     * 遍历目录并覆写源码
      *
      * @param dir       待遍历目录
      * @param srcDir    源码目录, 该目录文件将被生成的文件替换
@@ -201,6 +229,39 @@ public class RushUtils {
                 }
             }
         }
+    }
+
+    /**
+     * 遍历给定文件集合并覆写源码
+     *
+     * @param files     指定文件集合
+     * @param srcDir    源码目录
+     * @param targetDir delombok 生成目录
+     */
+    private final static void traverseFiles(Collection<VirtualFile> files, String srcDir, String targetDir) {
+        for (VirtualFile file : files) {
+            String targetPath = file.getCanonicalPath().replace(srcDir, targetDir);
+            if (file.getName().endsWith(".java") && new File(targetPath).exists()) {
+                // 如果delombok文件存在, 则进行整合覆写
+                patchFile(file.getPath(), targetPath);
+            }
+        }
+    }
+
+    private static boolean deleteDir(File dir) {
+        if (!dir.exists()) {
+            return false;
+        }
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+        return dir.delete();
     }
 
 }
