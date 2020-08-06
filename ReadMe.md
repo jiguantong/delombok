@@ -13,12 +13,13 @@
 <h3>让你使用lombok与不使用lombok插件的人合作, 保证代码完整性的同时隐藏样板式代码, 让你只关注核心代码</h3><br>
 <p>使用: </p>
 <ul>
-<li>可以在提交代码前, 在vcs中勾选 "Delombok code" 复选框</li>
+<li>在提交代码前, 在vcs中勾选 "Delombok code" 复选框, 即可对要提交的代码进行delombok</li>
 <li>可以在 "Build" 菜单中点击 "Delombok project" 来delombok整个项目</li>
 </ul>
 <hr>
-<p>delombok前后看上去并没有什么区别, 依旧清爽, 保留lombok优点, 隐藏样板式代码, 让开发人员只关注核心代码; 解决lombok缺点 delombok后的代码即是完整代码, 不再依赖lombok插件, 也就是说无需强求别的开发人员必须安装lombok插件才能编译了</p>
+<p>保留lombok的所有优点的同时, 解决lombok的缺点</p>
+<p>让开发人员无感知保证代码完整性, 摆脱对插件的依赖, 无需再强迫团队成员安装插件</p>
+<p>无感知, 即为delombok前的代码与delombok之后的代码看上去没什么差别, 代码依旧简洁, 让你更关注核心代码的开发; 你仍然可以使用任何lombok注解提高编码效率, 团队成员无需lombok插件也可正常编译运行代码</p>
 
-![delombok之前](https://github.com/04637/delombok/blob/master/otherR/1.png)
-![delombok之后](https://github.com/04637/delombok/blob/master/otherR/2.png)
+![delombok前后对比](https://github.com/04637/delombok/blob/master/otherR/4.png) 
 ![提交代码前勾选](https://github.com/04637/delombok/blob/master/otherR/3.png)               
