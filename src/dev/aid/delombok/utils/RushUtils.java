@@ -195,7 +195,7 @@ public class RushUtils {
                 }
             }
             List<String> result = patch.applyTo(originalLines);
-            try (FileWriter fw = new FileWriter(originalPath)) {
+            try (FileWriter fw = new FileWriter(originalPath, StandardCharsets.UTF_8)) {
                 for (String s : result) {
                     fw.write(s + "\n");
                 }

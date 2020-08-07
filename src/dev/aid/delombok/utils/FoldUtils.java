@@ -3,8 +3,10 @@ package dev.aid.delombok.utils;
 import com.intellij.codeInsight.folding.CodeFoldingManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.FoldRegion;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 
 /**
  * 隐藏代码
@@ -33,5 +35,14 @@ public class FoldUtils {
             }
         };
         editor.getFoldingModel().runBatchFoldingOperation(foldProcess);
+    }
+
+    public static void reloadFiles(Project project) {
+        VirtualFile[] vfs = FileEditorManager.getInstance(project).getOpenFiles();
+        for (VirtualFile vf : vfs) {
+            FileDocumentManager.getInstance()
+                    .reloadFromDisk(FileDocumentManager.getInstance().getDocument(vf));
+            // System.out.println("reload: " + vf.getName());
+        }
     }
 }
