@@ -95,9 +95,9 @@ public class RushUtils {
             File targetDirFile = new File(targetDir);
             deleteDir(targetDirFile);
             String cmd = "cmd /c " +
-                    "java -cp \"" + lombokPath + ";" + toolsPath + "\" lombok.launch.Main delombok "
+                    "java -cp \"" + lombokPath + ";" + toolsPath + "\" lombok.launch.Main delombok \""
                     + srcDir
-                    + " -d " + targetDir + " -e UTF-8 --onlyChanged " +
+                    + "\" -d \"" + targetDir + "\" -e UTF-8 --onlyChanged " +
                     "-f indent:4 " +
                     "-f generateDelombokComment:skip " +
                     "-f javaLangAsFQN:skip " +
@@ -114,6 +114,7 @@ public class RushUtils {
             if (exitCode != 0) {
                 if (consoleView != null) {
                     consoleView.print("### => Delombok failed!\n", ConsoleViewContentType.LOG_ERROR_OUTPUT);
+                    consoleView.print(cmd, ConsoleViewContentType.LOG_WARNING_OUTPUT);
                     consoleView.print(sb.toString(), ConsoleViewContentType.LOG_WARNING_OUTPUT);
                 }
                 return "Delombok failed!";
