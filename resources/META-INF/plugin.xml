@@ -32,6 +32,11 @@
           <li>Add suppress warnings</li>
           <li>Fast reload from disk</li>
       </ul>
+      <ul>
+          <li>解决中文乱码</li>
+          <li>抑制sonar等工具对反编译后的代码的检测</li>
+          <li>快速从磁盘重载反编译后的代码文件</li>
+      </ul>
     ]]>
   </change-notes>
 
