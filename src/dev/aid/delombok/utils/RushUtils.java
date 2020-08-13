@@ -100,8 +100,7 @@ public class RushUtils {
                     + "\" -d \"" + targetDir + "\" -e UTF-8 --onlyChanged " +
                     "-f indent:4 " +
                     "-f generateDelombokComment:skip " +
-                    "-f javaLangAsFQN:skip " +
-                    "-f suppressWarnings:skip";
+                    "-f javaLangAsFQN:skip";
             Process process = Runtime.getRuntime().exec(cmd, null, new File(baseDir));
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream(),
                     StandardCharsets.UTF_8));
@@ -181,7 +180,7 @@ public class RushUtils {
                         }
                     }
                     // 在首个非空行位置及末尾位置插入自定义折叠注释
-                    lines.add(emptyIndex, indent + "//<editor-fold desc=\"delombok\">");
+                    lines.add(emptyIndex, indent + "//<editor-fold defaultstate=\"collapsed\" desc=\"delombok\">");
                     emptyIndex = lines.size();
                     for (int i = lines.size() - 1; i >= 0; i--) {
                         String line = lines.get(i);
@@ -199,6 +198,7 @@ public class RushUtils {
                 for (String s : result) {
                     fw.write(s + "\n");
                 }
+                fw.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }

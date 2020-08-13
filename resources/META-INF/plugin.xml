@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>dev.aid.delombok</id>
   <name>Delombok</name>
-  <version>1.18.3</version>
+  <version>1.18.4</version>
   <vendor email="04637@163.com" url="https://github.com/04637">阳光彩虹小白马Plus</vendor>
 
   <description><![CDATA[
@@ -16,7 +16,7 @@
       </ul>
       <br>
       --- Chinese ---
-      <h3>让你使用lombok与不使用lombok插件的人合作, 保证代码完整性的同时隐藏样板式代码, 让你只关注核心代码</h3><br>
+      <h3>让你与不使用lombok插件的人合作, 保证代码完整性的同时隐藏样板式代码并且屏蔽其警告, 让你只关注核心代码的开发</h3><br>
       <p>使用: </p>
       <ul>
           <li>可以在提交代码前, 在vcs中勾选 "Delombok code" 复选框</li>
@@ -28,10 +28,9 @@
 
   <change-notes><![CDATA[
       <ul>
-          <li>Support delombok the entire project</li>
-          <li>Support delombok the checked files in vcs</li>
-          <li>Automatically hide delombok code</li>
-          <li></li>
+          <li>Solve Chinese garbled</li>
+          <li>Add suppress warnings</li>
+          <li>Fast reload from disk</li>
       </ul>
     ]]>
   </change-notes>
@@ -45,7 +44,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
-    <postStartupActivity implementation="dev.aid.delombok.activity.MyStartupActivity" />
+    <!--<postStartupActivity implementation="dev.aid.delombok.activity.MyStartupActivity" />-->
   </extensions>
 
   <actions>

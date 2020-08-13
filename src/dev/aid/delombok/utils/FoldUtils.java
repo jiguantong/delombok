@@ -40,9 +40,10 @@ public class FoldUtils {
     public static void reloadFiles(Project project) {
         VirtualFile[] vfs = FileEditorManager.getInstance(project).getOpenFiles();
         for (VirtualFile vf : vfs) {
+            FileEditorManager.getInstance(project).closeFile(vf);
             FileDocumentManager.getInstance()
                     .reloadFromDisk(FileDocumentManager.getInstance().getDocument(vf));
-            // System.out.println("reload: " + vf.getName());
+            FileEditorManager.getInstance(project).openFile(vf, false);
         }
     }
 }

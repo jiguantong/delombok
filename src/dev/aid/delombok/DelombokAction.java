@@ -51,7 +51,6 @@ public class DelombokAction extends AnAction {
         String msg = task.getResult();
         if (StringUtils.isEmpty(msg)) {
             FoldUtils.reloadFiles(project);
-            FoldUtils.fold(project);
         }
     }
 }

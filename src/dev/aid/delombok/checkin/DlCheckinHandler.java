@@ -26,6 +26,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import dev.aid.delombok.utils.FoldUtils;
 import dev.aid.delombok.utils.RushUtils;
 
 /**
@@ -69,6 +70,7 @@ public class DlCheckinHandler extends CheckinHandler {
         };
         ProgressManager.getInstance().run(task);
         if (StringUtils.isEmpty(msg[0])) {
+            FoldUtils.reloadFiles(project);
             return ReturnResult.COMMIT;
         } else {
             handleError(msg[0]);
