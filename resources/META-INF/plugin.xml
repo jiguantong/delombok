@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>dev.aid.delombok</id>
   <name>Delombok</name>
-  <version>1.18.4</version>
+  <version>1.18.4.1</version>
   <vendor email="04637@163.com" url="https://github.com/04637">阳光彩虹小白马Plus</vendor>
 
   <description><![CDATA[
@@ -28,14 +28,10 @@
 
   <change-notes><![CDATA[
       <ul>
-          <li>Solve Chinese garbled</li>
-          <li>Add suppress warnings</li>
-          <li>Fast reload from disk</li>
+          <li>Adapt to the version after 2020.3, so that the function buttons are displayed normally in the Build menu</li>
       </ul>
       <ul>
-          <li>解决中文乱码</li>
-          <li>抑制sonar等工具对反编译后的代码的检测</li>
-          <li>快速从磁盘重载反编译后的代码文件</li>
+          <li>适配2020.3之后的版本, 使功能按钮在Build菜单中正常显示</li>
       </ul>
     ]]>
   </change-notes>
