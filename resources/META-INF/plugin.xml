@@ -64,7 +64,7 @@
     </action>
     <action id="dev.aid.delombok.Delombok2" class="dev.aid.delombok.DelombokAction"
         text="Delombok project" description="Deploy project" icon="/icons/icon16.svg">
-      <add-to-group group-id="Java.BuildMenu" anchor="after" relative-to-action="CompileDirty" />
+      <add-to-group group-id="BuildMenu" anchor="after" relative-to-action="CompileDirty" />
     </action>
   </actions>
 
