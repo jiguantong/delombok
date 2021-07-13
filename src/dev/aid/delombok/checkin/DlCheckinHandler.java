@@ -18,9 +18,15 @@ import com.intellij.util.PairConsumer;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.xml.sax.SAXException;
 
 import java.awt.BorderLayout;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -28,6 +34,9 @@ import javax.swing.JPanel;
 
 import dev.aid.delombok.utils.FoldUtils;
 import dev.aid.delombok.utils.RushUtils;
+import groovy.util.Node;
+import groovy.util.NodeList;
+import groovy.xml.QName;
 
 /**
  * 提交前动作
@@ -60,12 +69,55 @@ public class DlCheckinHandler extends CheckinHandler {
         if (!this.checkBox.isSelected()) {
             return ReturnResult.COMMIT;
         }
+        List<String> moduleList = new ArrayList<>();
+        try {
+            Node node = RushUtils.xmlParser.parse(project.getBasePath() + "/.idea/compiler.xml");
+            NodeList modules = node.getAt(QName.valueOf("component"))
+                    .getAt("annotationProcessing")
+                    .getAt("profile")
+                    .getAt("module");
+            for (Object module : modules) {
+                Node moduleNode = (Node) module;
+                String moduleName = (String) moduleNode.attribute("name");
+                moduleList.add(moduleName);
+            }
+        } catch (IOException | SAXException ioException) {
+            ioException.printStackTrace();
+        }
         Collection<VirtualFile> affectedFiles = checkinPanel.getVirtualFiles();
         final String[] msg = {""};
         Task.Modal task = new Task.Modal(project, "Delombok code...", false) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
-                msg[0] = RushUtils.rush(project.getBasePath(), "src", null, progressIndicator, affectedFiles);
+                if (moduleList.isEmpty()) {
+                    msg[0] = RushUtils.rush(project.getBasePath(), "src", progressIndicator, affectedFiles);
+                } else {
+                    Map<String, List<VirtualFile>> moduleFiles = new HashMap<>();
+                    for (VirtualFile affectedFile : affectedFiles) {
+                        String filePath = affectedFile.getPath();
+                        int baseIndex = filePath.indexOf(project.getBasePath()) + project.getBasePath().length() + 1;
+                        int srcIndex = filePath.indexOf("src") - 1;
+                        if (srcIndex <= baseIndex) {
+                            // 无module
+                            if (!moduleFiles.containsKey("")) {
+                                moduleFiles.put("", new ArrayList<>());
+                            }
+                            moduleFiles.get("").add(affectedFile);
+                            continue;
+                        }
+                        String module = filePath.substring(baseIndex, srcIndex);
+                        if (!moduleFiles.containsKey(module)) {
+                            moduleFiles.put(module, new ArrayList<>());
+                        }
+                        moduleFiles.get(module).add(affectedFile);
+                    }
+                    for (Map.Entry<String, List<VirtualFile>> stringListEntry : moduleFiles.entrySet()) {
+                        String result = RushUtils.rush(project.getBasePath() + "/" + stringListEntry.getKey(), "src", progressIndicator, stringListEntry.getValue());
+                        if (!StringUtils.isEmpty(result)) {
+                            msg[0] = result;
+                        }
+                    }
+                }
             }
         };
         ProgressManager.getInstance().run(task);

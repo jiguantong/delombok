@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>dev.aid.delombok</id>
   <name>Delombok</name>
-  <version>1.18.4.1</version>
+  <version>1.18.4.2</version>
   <vendor email="04637@163.com" url="https://github.com/04637">阳光彩虹小白马Plus</vendor>
 
   <description><![CDATA[
@@ -13,6 +13,7 @@
       <ul>
           <li>You can check "Delombok code" checkbox in vcs before committing the code.</li>
           <li>You can click "Delombok project" in "Build" menu.</li>
+          <li>Before Delombok, the project source file will be automatically backed up to the project path/delombok/src-bak, and the project file can be restored here.</li>
       </ul>
       <br>
       --- Chinese ---
@@ -21,6 +22,7 @@
       <ul>
           <li>可以在提交代码前, 在vcs中勾选 "Delombok code" 复选框</li>
           <li>可以在 "Build" 菜单中点击 "Delombok project" 来delombok整个项目</li>
+          <li>在Delombok前, 会自动将项目源文件备份至 项目路径/delombok/src-bak, 可在此处恢复项目文件</li>
       </ul>
       <hr>
       Github: <a href="https://github.com/04637/delombok">https://github.com/04637/delombok</a></br>
@@ -28,10 +30,10 @@
 
   <change-notes><![CDATA[
       <ul>
-          <li>Adapt to the version after 2020.3, so that the function buttons are displayed normally in the Build menu</li>
+          <li>Support delombok projects containing modules.</li>
       </ul>
       <ul>
-          <li>适配2020.3之后的版本, 使功能按钮在Build菜单中正常显示</li>
+          <li>支持delombok含有module的项目</li>
       </ul>
     ]]>
   </change-notes>
