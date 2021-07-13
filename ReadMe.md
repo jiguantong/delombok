@@ -7,6 +7,7 @@
 <ul>
 <li>You can check "Delombok code" checkbox in vcs before committing the code.</li>
 <li>You can click "Delombok project" in "Build" menu.</li>
+<li>Before Delombok, the project source file will be automatically backed up to the project path/delombok/src-bak, and the project file can be restored here.</li>
 </ul>
 <br>
 --- Chinese ---
@@ -15,6 +16,7 @@
 <ul>
 <li>在提交代码前, 在vcs中勾选 "Delombok code" 复选框, 即可对要提交的代码进行delombok</li>
 <li>可以在 "Build" 菜单中点击 "Delombok project" 来delombok整个项目</li>
+<li>在Delombok前, 会自动将项目源文件备份至 项目路径/delombok/src-bak, 可在此处恢复项目文件</li>
 </ul>
 <hr>
 
