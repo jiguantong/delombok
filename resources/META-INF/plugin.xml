@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>dev.aid.delombok</id>
   <name>Delombok</name>
-  <version>1.18.4.2</version>
+  <version>1.18.4.3</version>
   <vendor email="04637@163.com" url="https://github.com/04637">阳光彩虹小白马Plus</vendor>
 
   <description><![CDATA[
@@ -25,15 +25,19 @@
           <li>在Delombok前, 会自动将项目源文件备份至 项目路径/delombok/src-bak, 可在此处恢复项目文件</li>
       </ul>
       <hr>
+      注: 当前只支持windows系统
+      <hr>
       Github: <a href="https://github.com/04637/delombok">https://github.com/04637/delombok</a></br>
     ]]></description>
 
   <change-notes><![CDATA[
       <ul>
           <li>Support delombok projects containing modules.</li>
+          <li>Add console output.</li>
       </ul>
       <ul>
           <li>支持delombok含有module的项目</li>
+          <li>添加控制台输出</li>
       </ul>
     ]]>
   </change-notes>
@@ -67,8 +71,8 @@
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <!--<toolWindow id="Delombok" icon="/icons/icon13.svg" anchor="bottom"-->
-    <!--    factoryClass="dev.aid.delombok.window.MyToolWindowFactory" />-->
+    <toolWindow id="Delombok" icon="/icons/icon13.svg" anchor="bottom"
+        factoryClass="dev.aid.delombok.window.MyToolWindowFactory" />
     <checkinHandlerFactory implementation="dev.aid.delombok.checkin.DlCheckinHandlerFactory" />
   </extensions>
 </idea-plugin>

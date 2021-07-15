@@ -1,5 +1,7 @@
 package dev.aid.delombok;
 
+import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -7,6 +9,9 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.content.Content;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -29,10 +34,24 @@ import groovy.xml.QName;
  * @date: 2020/8/1
  */
 public class DelombokAction extends AnAction {
+    private static ConsoleView consoleView;
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         Project project = e.getProject();
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Delombok");
+        toolWindow.show(() -> {
+        });
+        if (consoleView == null) {
+            consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+        } else {
+            consoleView.clear();
+        }
+        Content consoleContent = toolWindow.getContentManager().findContent("Console");
+        if (consoleContent == null) {
+            consoleContent = toolWindow.getContentManager().getFactory().createContent(consoleView.getComponent(), "Console", false);
+            toolWindow.getContentManager().addContent(consoleContent);
+        }
         FileDocumentManager.getInstance().saveAllDocuments();
         List<String> moduleList = new ArrayList<>();
         try {
@@ -53,9 +72,9 @@ public class DelombokAction extends AnAction {
             @Override
             protected String compute(@NotNull ProgressIndicator progressIndicator) throws RuntimeException {
                 if (moduleList.isEmpty()) {
-                    return RushUtils.rush(project.getBasePath(), "src", progressIndicator, null);
+                    return RushUtils.rush(project.getBasePath(), "src", progressIndicator, null, consoleView);
                 } else {
-                    return RushUtils.dealModules(project.getBasePath(), "src", progressIndicator, moduleList, null);
+                    return RushUtils.dealModules(project.getBasePath(), "src", progressIndicator, moduleList, null, consoleView);
                 }
             }
         };

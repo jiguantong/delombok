@@ -1,5 +1,7 @@
 package dev.aid.delombok.checkin;
 
+import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.ui.ConsoleView;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -12,6 +14,8 @@ import com.intellij.openapi.vcs.changes.CommitExecutor;
 import com.intellij.openapi.vcs.checkin.CheckinHandler;
 import com.intellij.openapi.vcs.ui.RefreshableOnComponent;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.NonFocusableCheckBox;
 import com.intellij.util.PairConsumer;
 
@@ -51,6 +55,7 @@ public class DlCheckinHandler extends CheckinHandler {
     private JCheckBox checkBox;
     private final Project project;
     private final CheckinProjectPanel checkinPanel;
+    private static ConsoleView consoleView;
 
     public DlCheckinHandler(Project project, CheckinProjectPanel checkinPanel) {
         this.project = project;
@@ -68,6 +73,14 @@ public class DlCheckinHandler extends CheckinHandler {
     public ReturnResult beforeCheckin(@Nullable CommitExecutor executor, PairConsumer<Object, Object> additionalDataConsumer) {
         if (!this.checkBox.isSelected()) {
             return ReturnResult.COMMIT;
+        }
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Delombok");
+        toolWindow.show(() -> {
+        });
+        if (consoleView == null) {
+            consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+        } else {
+            consoleView.clear();
         }
         List<String> moduleList = new ArrayList<>();
         try {
@@ -90,12 +103,14 @@ public class DlCheckinHandler extends CheckinHandler {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 if (moduleList.isEmpty()) {
-                    msg[0] = RushUtils.rush(project.getBasePath(), "src", progressIndicator, affectedFiles);
+                    msg[0] = RushUtils.rush(project.getBasePath(), "src",
+                            progressIndicator, affectedFiles, consoleView);
                 } else {
                     Map<String, List<VirtualFile>> moduleFiles = new HashMap<>();
                     for (VirtualFile affectedFile : affectedFiles) {
                         String filePath = affectedFile.getPath();
-                        int baseIndex = filePath.indexOf(project.getBasePath()) + project.getBasePath().length() + 1;
+                        int baseIndex = filePath.indexOf(project.getBasePath()) +
+                                project.getBasePath().length() + 1;
                         int srcIndex = filePath.indexOf("src") - 1;
                         if (srcIndex <= baseIndex) {
                             // 无module
@@ -112,7 +127,9 @@ public class DlCheckinHandler extends CheckinHandler {
                         moduleFiles.get(module).add(affectedFile);
                     }
                     for (Map.Entry<String, List<VirtualFile>> stringListEntry : moduleFiles.entrySet()) {
-                        String result = RushUtils.rush(project.getBasePath() + "/" + stringListEntry.getKey(), "src", progressIndicator, stringListEntry.getValue());
+                        String result = RushUtils.rush(project.getBasePath() + "/" +
+                                        stringListEntry.getKey(), "src", progressIndicator,
+                                stringListEntry.getValue(), consoleView);
                         if (!StringUtils.isEmpty(result)) {
                             msg[0] = result;
                         }

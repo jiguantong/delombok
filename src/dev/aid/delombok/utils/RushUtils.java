@@ -5,6 +5,8 @@ import com.github.difflib.patch.AbstractDelta;
 import com.github.difflib.patch.DeltaType;
 import com.github.difflib.patch.Patch;
 import com.github.difflib.patch.PatchFailedException;
+import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.vfs.VirtualFile;
 
@@ -80,8 +82,9 @@ public class RushUtils {
      * @param srcDir  需要 delombok 的源码目录, 注意该目录传值为 baseDir 的相对路径
      * @return errMsg     错误信息
      */
-    public static String rush(String baseDir, String srcDir, ProgressIndicator indicator, Collection<VirtualFile> specifiedFiles) {
-        System.out.println("==>rush: " + baseDir + "/" + srcDir);
+    public static String rush(String baseDir, String srcDir, ProgressIndicator indicator, Collection<VirtualFile> specifiedFiles, ConsoleView consoleView) {
+        Printer printer = new Printer(consoleView);
+        printer.print("==>start: " + baseDir + "/" + srcDir);
         indicator.setFraction(0);
         // 如果是相对路径, 拼接绝对路径
         if (StringUtils.isEmpty(srcDir)) {
@@ -89,12 +92,13 @@ public class RushUtils {
         }
         srcDir = baseDir + "/" + srcDir;
         String tmpDir = baseDir + "/delombok";
-        indicator.setFraction(0.2);
+        indicator.setFraction(0.1);
         try {
             // 1. 备份源文件目录
             FileUtils.copyDirectoryToDirectory(new File(srcDir),
                     new File(tmpDir + "/src-bak"));
-            indicator.setFraction(0.4);
+            printer.print("\t==>copy: from " + srcDir + " to " + tmpDir + "/src-bak");
+            indicator.setFraction(0.2);
             // 2. 反编译lombok注解
             String targetDir = tmpDir + "/target";
             File targetDirFile = new File(targetDir);
@@ -106,7 +110,7 @@ public class RushUtils {
                     "-f indent:4 " +
                     "-f generateDelombokComment:skip " +
                     "-f javaLangAsFQN:skip";
-            System.out.println(cmd);
+            printer.print("\t==>delombok...");
             Process process = Runtime.getRuntime().exec(cmd, null, new File(baseDir));
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream(),
                     StandardCharsets.UTF_8));
@@ -115,27 +119,30 @@ public class RushUtils {
             while ((line = reader.readLine()) != null) {
                 processResult.append(line);
             }
-            System.out.println(processResult);
             int exitCode = process.waitFor();
+            if (StringUtils.isEmpty(processResult)) {
+                printer.print("\t==>Processing over!", ConsoleViewContentType.LOG_INFO_OUTPUT);
+            } else {
+                printer.print("\t==>Processing failed: " + processResult, ConsoleViewContentType.LOG_ERROR_OUTPUT);
+            }
             if (exitCode != 0) {
                 return "Delombok failed!";
             }
-            indicator.setFraction(0.7);
+            indicator.setFraction(0.4);
             if (specifiedFiles == null) {
                 // 未指定文件, 则覆写所有src
                 traverseDir(new File(srcDir), srcDir.replaceAll("/", "\\\\"),
-                        targetDir.replaceAll("/", "\\\\"));
+                        targetDir.replaceAll("/", "\\\\"), printer, indicator);
             } else {
                 // 遍历指定文件集合
-                traverseFiles(specifiedFiles, srcDir, targetDir);
+                traverseFiles(specifiedFiles, srcDir, targetDir, printer, indicator);
             }
 
-            indicator.setFraction(0.95);
-            // 4. 提醒折叠
+            printer.print("==>done!", ConsoleViewContentType.LOG_INFO_OUTPUT);
             indicator.setFraction(1);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-            return "Delombok: Overwriting src failed!";
+            printer.print("==>failed: " + e.getMessage(), ConsoleViewContentType.LOG_ERROR_OUTPUT);
         }
         return null;
     }
@@ -148,17 +155,19 @@ public class RushUtils {
      * @param indicator 进度条
      * @param modules   多模块名列表
      */
-    public static String dealModules(String baseDir, String srcDir, ProgressIndicator indicator, List<String> modules, Collection<VirtualFile> specifiedFiles) {
+    public static String dealModules(String baseDir, String srcDir, ProgressIndicator indicator, List<String> modules, Collection<VirtualFile> specifiedFiles, ConsoleView consoleView) {
+        Printer printer = new Printer(consoleView);
         File rootSrc = new File(baseDir + "/" + srcDir);
         if (rootSrc.exists()) {
-            String result = rush(baseDir, srcDir, indicator, specifiedFiles);
+            String result = rush(baseDir, srcDir, indicator, specifiedFiles, consoleView);
             if (!StringUtils.isEmpty(result)) {
                 return result;
             }
         }
         for (String module : modules) {
             String tmpBase = baseDir + "/" + module;
-            String result = rush(tmpBase, srcDir, indicator, specifiedFiles);
+            printer.print("=>module: " + module);
+            String result = rush(tmpBase, srcDir, indicator, specifiedFiles, consoleView);
             if (!StringUtils.isEmpty(result)) {
                 return result;
             }
@@ -172,7 +181,7 @@ public class RushUtils {
      * @param originalPath 源文件
      * @param targetPath   目标文件, 会对其新增块包裹折叠注释
      */
-    private static final void patchFile(String originalPath, String targetPath) {
+    private static void patchFile(String originalPath, String targetPath) {
         try {
             List<String> originalLines = Files.readAllLines(new File(originalPath).toPath());
             List<String> targetLines = Files.readAllLines(new File(targetPath).toPath());
@@ -234,21 +243,24 @@ public class RushUtils {
      * @param srcDir    源码目录, 该目录文件将被生成的文件替换
      * @param targetDir delombok 生成目录
      */
-    private static void traverseDir(File dir, String srcDir, String targetDir) {
+    private static void traverseDir(File dir, String srcDir, String targetDir, Printer printer, ProgressIndicator indicator) {
         if (!dir.exists() || !dir.isDirectory()) {
             return;
         }
         File[] files = dir.listFiles();
+        int i = 0;
         for (File f : files) {
             if (f.isDirectory()) {
-                traverseDir(f, srcDir, targetDir);
+                traverseDir(f, srcDir, targetDir, printer, indicator);
             } else if (f.isFile() && f.getName().endsWith(".java")) {
                 String targetPath = f.getAbsolutePath().replace(srcDir, targetDir);
                 if (new File(targetPath).exists()) {
                     // 如果delombok文件存在, 则进行整合覆写
                     patchFile(f.getAbsolutePath(), targetPath);
+                    printer.print("\t\t=>file: " + f.getAbsolutePath());
                 }
             }
+            indicator.setFraction(0.4 + (0.6 / files.length) * ++i);
         }
     }
 
@@ -259,13 +271,16 @@ public class RushUtils {
      * @param srcDir    源码目录
      * @param targetDir delombok 生成目录
      */
-    private final static void traverseFiles(Collection<VirtualFile> files, String srcDir, String targetDir) {
+    private static void traverseFiles(Collection<VirtualFile> files, String srcDir, String targetDir, Printer printer, ProgressIndicator indicator) {
+        int i = 0;
         for (VirtualFile file : files) {
             String targetPath = file.getCanonicalPath().replace(srcDir, targetDir);
             if (file.getName().endsWith(".java") && new File(targetPath).exists()) {
                 // 如果delombok文件存在, 则进行整合覆写
                 patchFile(file.getPath(), targetPath);
+                printer.print("\t\t=>file: " + file.getCanonicalPath());
             }
+            indicator.setFraction(0.4 + (0.6 / files.size()) * ++i);
         }
     }
 
@@ -285,4 +300,22 @@ public class RushUtils {
         return dir.delete();
     }
 
+}
+
+class Printer {
+    private final ConsoleView consoleView;
+
+    public Printer(ConsoleView consoleView) {
+        this.consoleView = consoleView;
+    }
+
+    public void print(String msg, ConsoleViewContentType type) {
+        if (consoleView != null) {
+            consoleView.print(msg + "\n", type);
+        }
+    }
+
+    public void print(String msg) {
+        print(msg, ConsoleViewContentType.LOG_VERBOSE_OUTPUT);
+    }
 }
