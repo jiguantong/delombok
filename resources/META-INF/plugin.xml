@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>dev.aid.delombok</id>
   <name>Delombok</name>
-  <version>1.18.4.3</version>
+  <version>1.18.4.4</version>
   <vendor email="04637@163.com" url="https://github.com/04637">阳光彩虹小白马Plus</vendor>
 
   <description><![CDATA[
@@ -34,10 +34,12 @@
       <ul>
           <li>Support delombok projects containing modules.</li>
           <li>Add console output.</li>
+          <li>Fix sub-module judgment error</li>
       </ul>
       <ul>
           <li>支持delombok含有module的项目</li>
           <li>添加控制台输出</li>
+          <li>修复子模块判断错误</li>
       </ul>
     ]]>
   </change-notes>

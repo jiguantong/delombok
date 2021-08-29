@@ -85,6 +85,7 @@ public class RushUtils {
     public static String rush(String baseDir, String srcDir, ProgressIndicator indicator, Collection<VirtualFile> specifiedFiles, ConsoleView consoleView) {
         Printer printer = new Printer(consoleView);
         printer.print("==>start: " + baseDir + "/" + srcDir);
+        indicator.setIndeterminate(false);
         indicator.setFraction(0);
         // 如果是相对路径, 拼接绝对路径
         if (StringUtils.isEmpty(srcDir)) {
@@ -118,6 +119,11 @@ public class RushUtils {
             String line;
             while ((line = reader.readLine()) != null) {
                 processResult.append(line);
+            }
+            if (!StringUtils.isEmpty(processResult)) {
+                // 忽略
+                System.err.println("\t==>Processing failed: " + processResult);
+                processResult = new StringBuilder();
             }
             int exitCode = process.waitFor();
             if (StringUtils.isEmpty(processResult)) {
@@ -166,8 +172,13 @@ public class RushUtils {
         }
         for (String module : modules) {
             String tmpBase = baseDir + "/" + module;
+            if (!new File(tmpBase).exists()) {
+                // 如果模块不存在，跳过
+                continue;
+            }
             printer.print("=>module: " + module);
-            String result = rush(tmpBase, srcDir, indicator, specifiedFiles, consoleView);
+            String result;
+            result = rush(tmpBase, srcDir, indicator, specifiedFiles, consoleView);
             if (!StringUtils.isEmpty(result)) {
                 return result;
             }
