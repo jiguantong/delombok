@@ -143,14 +143,12 @@ public class RushUtils {
             indicator.setFraction(0.4);
             if (specifiedFiles == null) {
                 // 未指定文件, 则覆写所有src
-                //todo 分隔符统一通用化/
-                traverseDir(new File(srcDir), srcDir.replaceAll("\\\\", "/"),
-                        targetDir.replaceAll("\\\\", "/"), printer, indicator);
+                traverseDir(new File(srcDir), dealPath(srcDir),
+                        dealPath(targetDir), printer, indicator);
             } else {
                 // 遍历指定文件集合
-                //todo 分隔符统一通用化/
-                traverseFiles(specifiedFiles, srcDir.replaceAll("\\\\", "/"),
-                        targetDir.replaceAll("\\\\", "/"), printer, indicator);
+                traverseFiles(specifiedFiles, dealPath(srcDir),
+                        dealPath(targetDir), printer, indicator);
             }
 
             printer.print("==>done!", ConsoleViewContentType.LOG_INFO_OUTPUT);
@@ -273,8 +271,8 @@ public class RushUtils {
             if (f.isDirectory()) {
                 traverseDir(f, srcDir, targetDir, printer, indicator);
             } else if (f.isFile() && f.getName().endsWith(".java")) {
-                //todo 分隔符统一通用化/
-                String targetPath = f.getAbsolutePath().replace(srcDir, targetDir);
+                String absPath = dealPath(f.getAbsolutePath());
+                String targetPath = absPath.replace(srcDir, targetDir);
                 if (new File(targetPath).exists()) {
                     // 如果delombok文件存在, 则进行整合覆写
                     patchFile(f.getAbsolutePath(), targetPath);
@@ -295,9 +293,8 @@ public class RushUtils {
     private static void traverseFiles(Collection<VirtualFile> files, String srcDir, String targetDir, Printer printer, ProgressIndicator indicator) {
         int i = 0;
         for (VirtualFile file : files) {
-            String canPath = file.getCanonicalPath();
-            //todo 分隔符统一通用化/ 注意去掉多个//
-            String targetPath = file.getCanonicalPath().replace(srcDir, targetDir);
+            String canPath = dealPath(file.getCanonicalPath());
+            String targetPath = canPath.replace(srcDir, targetDir);
             if (file.getName().endsWith(".java") && new File(targetPath).exists()) {
                 // 如果delombok文件存在, 则进行整合覆写
                 patchFile(file.getPath(), targetPath);
@@ -321,6 +318,17 @@ public class RushUtils {
             }
         }
         return dir.delete();
+    }
+
+    /**
+     * 处理path, 统一分隔符
+     *
+     * @param path 源路径
+     */
+    private static String dealPath(String path) {
+        path = path.replaceAll("\\\\", "/");
+        path = path.replaceAll("/+", "/");
+        return path;
     }
 
 }
