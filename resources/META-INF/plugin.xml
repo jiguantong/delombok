@@ -11,8 +11,9 @@
       <br>
       <p>Use: </p>
       <ul>
-          <li>You can check "Delombok code" checkbox in vcs before committing the code.</li>
-          <li>You can click "Delombok project" in "Build" menu.</li>
+          <li>Before using, please make sure you have configured the java environment variables.</li>
+          <li>Before submitting the code, check the "Delombok code" checkbox in vcs to delombok the file you submitted</li>
+          <li>You can click "Delombok project" in the "Build" menu to delombok the entire project</li>
           <li>Before Delombok, the project source file will be automatically backed up to the project path/delombok/src-bak, and the project file can be restored here.</li>
       </ul>
       <br>
@@ -20,26 +21,22 @@
       <h3>让你与不使用lombok插件的人合作, 保证代码完整性的同时隐藏样板式代码并且屏蔽其警告, 让你只关注核心代码的开发</h3><br>
       <p>使用: </p>
       <ul>
-          <li>可以在提交代码前, 在vcs中勾选 "Delombok code" 复选框</li>
+          <li>使用前, 请确定你已配置好java环境变量</li>
+          <li>可以在提交代码前, 在vcs中勾选 "Delombok code" 复选框来delombok你提交的文件</li>
           <li>可以在 "Build" 菜单中点击 "Delombok project" 来delombok整个项目</li>
           <li>在Delombok前, 会自动将项目源文件备份至 项目路径/delombok/src-bak, 可在此处恢复项目文件</li>
       </ul>
-      <hr>
-      注: 当前只支持windows系统
-      <hr>
       Github: <a href="https://github.com/04637/delombok">https://github.com/04637/delombok</a></br>
     ]]></description>
 
   <change-notes><![CDATA[
       <ul>
-          <li>Support delombok projects containing modules.</li>
-          <li>Add console output.</li>
-          <li>Fix sub-module judgment error</li>
+          <li>Supported Linux</li>
+          <li>Unified file separator</li>
       </ul>
       <ul>
-          <li>支持delombok含有module的项目</li>
-          <li>添加控制台输出</li>
-          <li>修复子模块判断错误</li>
+          <li>支持linux系统</li>
+          <li>统一文件分隔符</li>
       </ul>
     ]]>
   </change-notes>

@@ -83,7 +83,7 @@ public class ZipUtils {
         final InputStream zipStream;
         OutputStream fileStream;
 
-        tempFile = File.createTempFile(fileName, Long.toString(System.currentTimeMillis()));
+        tempFile = File.createTempFile("delombok-", fileName);
         tempFile.deleteOnExit();
         entry = zipFile.getEntry(fileName);
 

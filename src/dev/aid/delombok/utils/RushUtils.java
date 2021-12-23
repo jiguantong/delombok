@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,8 +44,12 @@ public class RushUtils {
     private static final Pattern pattern = Pattern.compile("^(\\s*)");
     private static String lombokPath;
     private static String toolsPath;
+    private static String os;
+    private static boolean isWindows;
 
     static {
+        os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+        isWindows = os.contains("windows");
         URI uri = ZipUtils.getJarURI();
         lombokPath = "lombok.jar";
         toolsPath = "tools.jar";
@@ -53,11 +58,11 @@ public class RushUtils {
             URI toolsUri = ZipUtils.getFile(uri, "tools.jar");
             if (lombokUri != null && toolsUri != null) {
                 lombokPath = lombokUri.getPath();
-                if (lombokPath.charAt(0) == '/') {
+                if (lombokPath.charAt(0) == '/' && isWindows) {
                     lombokPath = lombokPath.replaceFirst("/", "");
                 }
                 toolsPath = toolsUri.getPath();
-                if (toolsPath.charAt(0) == '/') {
+                if (toolsPath.charAt(0) == '/' && isWindows) {
                     toolsPath = toolsPath.replaceFirst("/", "");
                 }
             }
@@ -104,13 +109,23 @@ public class RushUtils {
             String targetDir = tmpDir + "/target";
             File targetDirFile = new File(targetDir);
             deleteDir(targetDirFile);
-            String cmd = "java -cp \"" + lombokPath + ";" + toolsPath + "\" lombok.launch.Main delombok \""
+            String[] cmd = new String[3];
+            cmd[0] = "cmd";
+            cmd[1] = "/c";
+            String pathSplitter = ";";
+            if (!isWindows) {
+                cmd[0] = "/bin/sh";
+                cmd[1] = "-c";
+                pathSplitter = ":";
+            }
+            cmd[2] = "java -cp \"" + lombokPath + pathSplitter + toolsPath + "\" lombok.launch.Main delombok \""
                     + srcDir
                     + "\" -d \"" + targetDir + "\" -e UTF-8 --onlyChanged " +
                     "-f indent:4 " +
                     "-f generateDelombokComment:skip " +
                     "-f javaLangAsFQN:skip";
             printer.print("\t==>delombok...");
+            // printer.print("\n" + Arrays.toString(cmd) + "\n");
             Process process = Runtime.getRuntime().exec(cmd, null, new File(baseDir));
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream(),
                     StandardCharsets.UTF_8));
@@ -124,7 +139,7 @@ public class RushUtils {
                 System.err.println("\t==>Processing failed: " + processResult);
                 String msg = processResult.toString();
                 processResult = new StringBuilder();
-                if (msg.contains("java")) {
+                if (msg.contains("java") && msg.contains("�")) {
                     processResult.append("Please make sure the java environment variables have been configured.");
                 }
             }
