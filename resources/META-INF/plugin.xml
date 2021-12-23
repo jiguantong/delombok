@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>dev.aid.delombok</id>
   <name>Delombok</name>
-  <version>1.18.4.4</version>
+  <version>1.18.4.5</version>
   <vendor email="04637@163.com" url="https://github.com/04637">阳光彩虹小白马Plus</vendor>
 
   <description><![CDATA[

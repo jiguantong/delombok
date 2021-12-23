@@ -104,8 +104,7 @@ public class RushUtils {
             String targetDir = tmpDir + "/target";
             File targetDirFile = new File(targetDir);
             deleteDir(targetDirFile);
-            String cmd = "cmd /c " +
-                    "java -cp \"" + lombokPath + ";" + toolsPath + "\" lombok.launch.Main delombok \""
+            String cmd = "java -cp \"" + lombokPath + ";" + toolsPath + "\" lombok.launch.Main delombok \""
                     + srcDir
                     + "\" -d \"" + targetDir + "\" -e UTF-8 --onlyChanged " +
                     "-f indent:4 " +
@@ -123,25 +122,35 @@ public class RushUtils {
             if (!StringUtils.isEmpty(processResult)) {
                 // 忽略
                 System.err.println("\t==>Processing failed: " + processResult);
+                String msg = processResult.toString();
                 processResult = new StringBuilder();
+                if (msg.contains("java")) {
+                    processResult.append("Please make sure the java environment variables have been configured.");
+                }
             }
             int exitCode = process.waitFor();
-            if (StringUtils.isEmpty(processResult)) {
-                printer.print("\t==>Processing over!", ConsoleViewContentType.LOG_INFO_OUTPUT);
-            } else {
-                printer.print("\t==>Processing failed: " + processResult, ConsoleViewContentType.LOG_ERROR_OUTPUT);
-            }
             if (exitCode != 0) {
+                if (!StringUtils.isEmpty(processResult)) {
+                    printer.print("\t==>Processing failed: " + processResult, ConsoleViewContentType.LOG_ERROR_OUTPUT);
+                    return processResult.toString();
+                }
                 return "Delombok failed!";
+            } else {
+                if (StringUtils.isEmpty(processResult)) {
+                    printer.print("\t==>Processing over!", ConsoleViewContentType.LOG_INFO_OUTPUT);
+                }
             }
             indicator.setFraction(0.4);
             if (specifiedFiles == null) {
                 // 未指定文件, 则覆写所有src
-                traverseDir(new File(srcDir), srcDir.replaceAll("/", "\\\\"),
-                        targetDir.replaceAll("/", "\\\\"), printer, indicator);
+                //todo 分隔符统一通用化/
+                traverseDir(new File(srcDir), srcDir.replaceAll("\\\\", "/"),
+                        targetDir.replaceAll("\\\\", "/"), printer, indicator);
             } else {
                 // 遍历指定文件集合
-                traverseFiles(specifiedFiles, srcDir, targetDir, printer, indicator);
+                //todo 分隔符统一通用化/
+                traverseFiles(specifiedFiles, srcDir.replaceAll("\\\\", "/"),
+                        targetDir.replaceAll("\\\\", "/"), printer, indicator);
             }
 
             printer.print("==>done!", ConsoleViewContentType.LOG_INFO_OUTPUT);
@@ -264,6 +273,7 @@ public class RushUtils {
             if (f.isDirectory()) {
                 traverseDir(f, srcDir, targetDir, printer, indicator);
             } else if (f.isFile() && f.getName().endsWith(".java")) {
+                //todo 分隔符统一通用化/
                 String targetPath = f.getAbsolutePath().replace(srcDir, targetDir);
                 if (new File(targetPath).exists()) {
                     // 如果delombok文件存在, 则进行整合覆写
@@ -285,6 +295,8 @@ public class RushUtils {
     private static void traverseFiles(Collection<VirtualFile> files, String srcDir, String targetDir, Printer printer, ProgressIndicator indicator) {
         int i = 0;
         for (VirtualFile file : files) {
+            String canPath = file.getCanonicalPath();
+            //todo 分隔符统一通用化/ 注意去掉多个//
             String targetPath = file.getCanonicalPath().replace(srcDir, targetDir);
             if (file.getName().endsWith(".java") && new File(targetPath).exists()) {
                 // 如果delombok文件存在, 则进行整合覆写
